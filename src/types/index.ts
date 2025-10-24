@@ -1,0 +1,36 @@
+export interface Match {
+  round: number;
+  homeTeam: string;
+  awayTeam: string;
+  homeScore: number;
+  awayScore: number;
+  tournament?: string;
+}
+
+export interface TeamStanding {
+  team: string;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+  position: number;
+}
+
+export interface RoundStandings {
+  round: number;
+  standings: TeamStanding[];
+}
+
+export interface TeamPositionData {
+  round: number;
+  position: number;
+}
+
+export interface TeamSeasonData {
+  team: string;
+  positions: TeamPositionData[];
+}
