@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ExcelImporter } from './components/ExcelImporter';
 import { TournamentSelector } from './components/TournamentSelector';
 import { TeamTabs } from './components/TeamTabs';
