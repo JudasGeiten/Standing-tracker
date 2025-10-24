@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { Match } from '../types';
+import { Match, Tournament } from '../types';
 
 /**
  * Parses the result string (e.g., "2-1", "0-0") into home and away scores
@@ -21,7 +21,14 @@ const parseResult = (result: string): { homeScore: number; awayScore: number } |
 };
 
 /**
- * Parses Excel files containing match data
+ * Generate a unique ID from tournament name
+ */
+const generateTournamentId = (name: string): string => {
+  return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+};
+
+/**
+ * Parses a single Excel file as one tournament
  * Expected format based on user's layout:
  * Column A: Round number
  * Column B: Date
@@ -35,7 +42,7 @@ const parseResult = (result: string): { homeScore: number; awayScore: number } |
  * Column J: Match ID
  * Column K: Match format
  */
-export const parseExcelFile = (file: File): Promise<Match[]> => {
+export const parseExcelFile = (file: File): Promise<Tournament> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -44,7 +51,7 @@ export const parseExcelFile = (file: File): Promise<Match[]> => {
         const data = e.target?.result;
         const workbook = XLSX.read(data, { type: 'binary' });
         
-        // Get all sheets
+        let tournamentName = '';
         const allMatches: Match[] = [];
         
         workbook.SheetNames.forEach((sheetName: string) => {
@@ -70,19 +77,21 @@ export const parseExcelFile = (file: File): Promise<Match[]> => {
               // Column I (index 8): Tournament name
               const tournament = String(row[8] || '').trim();
               
+              // Set tournament name from first valid row
+              if (tournament && !tournamentName) {
+                tournamentName = tournament;
+              }
+              
               // Only include if we have all required data
-              if (round && homeTeam && awayTeam && parsedResult) {
+              if (round && homeTeam && awayTeam && parsedResult && tournament) {
                 const match: Match = {
                   round,
                   homeTeam,
                   awayTeam,
                   homeScore: parsedResult.homeScore,
                   awayScore: parsedResult.awayScore,
+                  tournament,
                 };
-                
-                if (tournament) {
-                  match.tournament = tournament;
-                }
                 
                 return match;
               }
@@ -97,7 +106,16 @@ export const parseExcelFile = (file: File): Promise<Match[]> => {
         // Sort by round
         allMatches.sort((a, b) => a.round - b.round);
         
-        resolve(allMatches);
+        // Use tournament name from data, or fallback to filename
+        const finalTournamentName = tournamentName || file.name.replace(/\.(xlsx?|csv)$/i, '');
+        
+        const tournament: Tournament = {
+          id: generateTournamentId(finalTournamentName),
+          name: finalTournamentName,
+          matches: allMatches
+        };
+        
+        resolve(tournament);
       } catch (error) {
         reject(error);
       }
@@ -111,16 +129,22 @@ export const parseExcelFile = (file: File): Promise<Match[]> => {
   });
 };
 
-export const parseMultipleExcelFiles = async (files: FileList): Promise<Match[]> => {
-  const allMatches: Match[] = [];
+/**
+ * Parse multiple Excel files, each as a separate tournament
+ */
+export const parseMultipleExcelFiles = async (files: FileList): Promise<Tournament[]> => {
+  const tournaments: Tournament[] = [];
   
   for (let i = 0; i < files.length; i++) {
-    const matches = await parseExcelFile(files[i]);
-    allMatches.push(...matches);
+    try {
+      const tournament = await parseExcelFile(files[i]);
+      if (tournament.matches.length > 0) {
+        tournaments.push(tournament);
+      }
+    } catch (error) {
+      console.error(`Error parsing file ${files[i].name}:`, error);
+    }
   }
   
-  // Sort by round and remove duplicates
-  allMatches.sort((a, b) => a.round - b.round);
-  
-  return allMatches;
+  return tournaments;
 };

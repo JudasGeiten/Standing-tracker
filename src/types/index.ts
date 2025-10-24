@@ -4,7 +4,13 @@ export interface Match {
   awayTeam: string;
   homeScore: number;
   awayScore: number;
-  tournament?: string;
+  tournament: string;
+}
+
+export interface Tournament {
+  id: string;
+  name: string;
+  matches: Match[];
 }
 
 export interface TeamStanding {

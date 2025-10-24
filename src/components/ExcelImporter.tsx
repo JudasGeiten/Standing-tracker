@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { parseMultipleExcelFiles } from '../utils/excelParser';
-import { Match } from '../types';
+import { Tournament } from '../types';
 
 interface ExcelImporterProps {
-  onMatchesLoaded: (matches: Match[]) => void;
+  onTournamentsLoaded: (tournaments: Tournament[]) => void;
 }
 
-export const ExcelImporter: React.FC<ExcelImporterProps> = ({ onMatchesLoaded }) => {
+export const ExcelImporter: React.FC<ExcelImporterProps> = ({ onTournamentsLoaded }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,14 +18,14 @@ export const ExcelImporter: React.FC<ExcelImporterProps> = ({ onMatchesLoaded })
     setError(null);
 
     try {
-      const matches = await parseMultipleExcelFiles(files);
+      const tournaments = await parseMultipleExcelFiles(files);
       
-      if (matches.length === 0) {
-        setError('No valid match data found in the selected files.');
+      if (tournaments.length === 0) {
+        setError('No valid tournament data found in the selected files.');
         return;
       }
 
-      onMatchesLoaded(matches);
+      onTournamentsLoaded(tournaments);
     } catch (err) {
       setError('Error parsing Excel files. Please check the file format.');
       console.error(err);
@@ -50,8 +50,8 @@ export const ExcelImporter: React.FC<ExcelImporterProps> = ({ onMatchesLoaded })
           className="file-input"
         />
         <p className="help-text">
-          Select one or more Excel files containing match data. 
-          Expected format: Round number (Column A), Home team (Column E), Result (Column F, e.g., "2-1"), Away team (Column G)
+          Select one or more Excel files - each file will be imported as a separate tournament. 
+          Expected format: Round number (Column A), Home team (Column E), Result (Column F, e.g., "2-1"), Away team (Column G), Tournament name (Column I)
         </p>
       </div>
 
