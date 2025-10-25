@@ -34,6 +34,14 @@ export interface RoundStandings {
 export interface TeamPositionData {
   round: number;
   position: number;
+  points: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
 }
 
 export interface TeamSeasonData {

@@ -134,7 +134,12 @@ function App() {
               onTeamSelect={setSelectedTeam}
             />
 
-            <TeamChart teamData={selectedTeamData} maxPosition={maxPosition} allRounds={allRounds} />
+            <TeamChart 
+              teamData={selectedTeamData} 
+              maxPosition={maxPosition} 
+              allRounds={allRounds}
+              tournamentMatches={currentTournament?.matches || []}
+            />
           </>
         )}
 

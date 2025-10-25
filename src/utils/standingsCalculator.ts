@@ -106,11 +106,22 @@ export const extractTeamSeasonData = (roundStandings: RoundStandings[]): TeamSea
   const teamsMap = new Map<string, TeamPositionData[]>();
 
   roundStandings.forEach(({ round, standings }) => {
-    standings.forEach(({ team, position }) => {
-      if (!teamsMap.has(team)) {
-        teamsMap.set(team, []);
+    standings.forEach(standing => {
+      if (!teamsMap.has(standing.team)) {
+        teamsMap.set(standing.team, []);
       }
-      teamsMap.get(team)!.push({ round, position });
+      teamsMap.get(standing.team)!.push({
+        round,
+        position: standing.position,
+        points: standing.points,
+        goalsFor: standing.goalsFor,
+        goalsAgainst: standing.goalsAgainst,
+        goalDifference: standing.goalDifference,
+        played: standing.played,
+        won: standing.won,
+        drawn: standing.drawn,
+        lost: standing.lost
+      });
     });
   });
 
